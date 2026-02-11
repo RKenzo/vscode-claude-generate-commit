@@ -1,0 +1,62 @@
+{
+  "name": "claude-commit-gen",
+  "displayName": "Claude Commit Message Generator",
+  "description": "Generate Conventional Commits messages using Claude Code CLI",
+  "version": "0.1.0",
+  "publisher": "ywap-develop",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "SCM Providers",
+    "Other"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "claude-commit-gen.generate",
+        "title": "Generate Commit Message with Claude",
+        "icon": "$(sparkle)"
+      }
+    ],
+    "menus": {
+      "scm/title": [
+        {
+          "command": "claude-commit-gen.generate",
+          "group": "navigation",
+          "when": "scmProvider == git"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Claude Commit Generator",
+      "properties": {
+        "claude-commit-gen.claudePath": {
+          "type": "string",
+          "default": "claude",
+          "description": "Path to the claude CLI executable"
+        },
+        "claude-commit-gen.timeout": {
+          "type": "number",
+          "default": 30000,
+          "description": "Timeout in milliseconds for Claude to respond"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.3.0",
+    "@vscode/vsce": "^3.0.0"
+  }
+}
