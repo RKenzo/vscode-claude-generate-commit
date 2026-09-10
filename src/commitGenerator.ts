@@ -29,14 +29,53 @@ function execGit(args: string[], cwd: string): Promise<string> {
 	});
 }
 
-function runClaude(prompt: string, cwd: string, token: vscode.CancellationToken): Promise<string> {
+const CONFIG_DIR_KEY = 'claude-commit-gen.claudeConfigDir';
+const CONFIG_DIR_ASKED_KEY = 'claude-commit-gen.claudeConfigDirAsked';
+
+export async function promptClaudeConfigDir(context: vscode.ExtensionContext): Promise<void> {
+	const current = context.globalState.get<string>(CONFIG_DIR_KEY, '');
+	const value = await vscode.window.showInputBox({
+		title: 'Claude Config Directory',
+		prompt: 'Caminho para CLAUDE_CONFIG_DIR (deixe em branco para usar o padrão do sistema)',
+		value: current,
+		placeHolder: 'ex: C:\\Users\\voce\\.claude-work',
+	});
+
+	if (value === undefined) {
+		return;
+	}
+
+	await context.globalState.update(CONFIG_DIR_KEY, value.trim());
+	await context.globalState.update(CONFIG_DIR_ASKED_KEY, true);
+}
+
+async function getClaudeConfigDir(context: vscode.ExtensionContext): Promise<string> {
+	const alreadyAsked = context.globalState.get<boolean>(CONFIG_DIR_ASKED_KEY, false);
+	if (!alreadyAsked) {
+		await promptClaudeConfigDir(context);
+	}
+	return context.globalState.get<string>(CONFIG_DIR_KEY, '');
+}
+
+function runClaude(
+	prompt: string,
+	cwd: string,
+	token: vscode.CancellationToken,
+	claudeConfigDir: string
+): Promise<string> {
 	const config = vscode.workspace.getConfiguration('claude-commit-gen');
 	const claudePath = config.get<string>('claudePath', 'claude');
 	const timeout = config.get<number>('timeout', 30000);
 
 	return new Promise((resolve, reject) => {
+		const env = { ...process.env };
+		if (claudeConfigDir) {
+			env.CLAUDE_CONFIG_DIR = claudeConfigDir;
+		}
+
 		const proc = spawn(claudePath, ['--print'], {
 			cwd,
+			env,
 			stdio: ['pipe', 'pipe', 'pipe'],
 		});
 
@@ -95,7 +134,7 @@ Formato obrigatório:
 * ...
 
 Regras:
-- Idioma: inglês
+- Idioma: Português Brasileiro
 - Primeira linha: imperativa, concisa, foca no PORQUÊ da mudança (máx 72 caracteres)
 - Corpo (bullet points): lista objetiva das mudanças concretas feitas (O QUÊ)
 - Omita bullet points óbvios ou redundantes com o título
@@ -122,7 +161,7 @@ ${diff}
 Responda APENAS com a mensagem de commit, sem explicações, sem blocos de código, sem aspas ao redor.`;
 }
 
-export async function generateCommitMessage(): Promise<void> {
+export async function generateCommitMessage(context: vscode.ExtensionContext): Promise<void> {
 	const gitExtension = vscode.extensions.getExtension<GitExtension>('vscode.git');
 	if (!gitExtension) {
 		vscode.window.showErrorMessage('Git extension not found.');
@@ -143,6 +182,7 @@ export async function generateCommitMessage(): Promise<void> {
 	}
 
 	const cwd = repo.rootUri.fsPath;
+	const claudeConfigDir = await getClaudeConfigDir(context);
 
 	await vscode.window.withProgress(
 		{
@@ -163,7 +203,7 @@ export async function generateCommitMessage(): Promise<void> {
 			}
 
 			const prompt = buildPrompt(diff, files, recentCommits);
-			const message = await runClaude(prompt, cwd, token);
+			const message = await runClaude(prompt, cwd, token, claudeConfigDir);
 			repo.inputBox.value = message;
 		}
 	);

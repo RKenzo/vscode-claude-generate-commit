@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { execFile } from 'child_process';
-import { generateCommitMessage } from './commitGenerator';
+import { generateCommitMessage, promptClaudeConfigDir } from './commitGenerator';
 
 export function activate(context: vscode.ExtensionContext) {
 	const claudePath = vscode.workspace.getConfiguration('claude-commit-gen').get<string>('claudePath', 'claude');
@@ -13,11 +13,15 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
-	const disposable = vscode.commands.registerCommand('claude-commit-gen.generate', () => {
-		return generateCommitMessage();
+	const generateDisposable = vscode.commands.registerCommand('claude-commit-gen.generate', () => {
+		return generateCommitMessage(context);
 	});
 
-	context.subscriptions.push(disposable);
+	const setConfigDirDisposable = vscode.commands.registerCommand('claude-commit-gen.setConfigDir', () => {
+		return promptClaudeConfigDir(context);
+	});
+
+	context.subscriptions.push(generateDisposable, setConfigDirDisposable);
 }
 
 export function deactivate() {}

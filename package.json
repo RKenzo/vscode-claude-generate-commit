@@ -2,7 +2,7 @@
   "name": "claude-commit-gen",
   "displayName": "Claude Commit Message Generator",
   "description": "Generate Conventional Commits messages using Claude Code CLI",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publisher": "ywap-develop",
   "engines": {
     "vscode": "^1.85.0"
@@ -21,6 +21,10 @@
         "command": "claude-commit-gen.generate",
         "title": "Generate Commit Message with Claude",
         "icon": "$(sparkle)"
+      },
+      {
+        "command": "claude-commit-gen.setConfigDir",
+        "title": "Claude Commit Generator: Set Claude Config Directory"
       }
     ],
     "menus": {
