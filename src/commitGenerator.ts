@@ -95,7 +95,7 @@ Formato obrigatório:
 * ...
 
 Regras:
-- Idioma: inglês
+- Idioma: Português Brasileiro
 - Primeira linha: imperativa, concisa, foca no PORQUÊ da mudança (máx 72 caracteres)
 - Corpo (bullet points): lista objetiva das mudanças concretas feitas (O QUÊ)
 - Omita bullet points óbvios ou redundantes com o título
