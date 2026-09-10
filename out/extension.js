@@ -45,10 +45,13 @@ function activate(context) {
             vscode.window.showWarningMessage(`Claude CLI not found at "${claudePath}". Install it or update the "claude-commit-gen.claudePath" setting.`);
         }
     });
-    const disposable = vscode.commands.registerCommand('claude-commit-gen.generate', () => {
-        return (0, commitGenerator_1.generateCommitMessage)();
+    const generateDisposable = vscode.commands.registerCommand('claude-commit-gen.generate', () => {
+        return (0, commitGenerator_1.generateCommitMessage)(context);
     });
-    context.subscriptions.push(disposable);
+    const setConfigDirDisposable = vscode.commands.registerCommand('claude-commit-gen.setConfigDir', () => {
+        return (0, commitGenerator_1.promptClaudeConfigDir)(context);
+    });
+    context.subscriptions.push(generateDisposable, setConfigDirDisposable);
 }
 function deactivate() { }
 //# sourceMappingURL=extension.js.map

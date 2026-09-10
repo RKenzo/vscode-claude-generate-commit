@@ -1,1 +1,4 @@
 node_modules/
+.code-review-graph
+.serena
+claude-commit-gen-*
